@@ -2,8 +2,6 @@ package io.mountblue.reddit_project.controller;
 
 import io.mountblue.reddit_project.model.User;
 import io.mountblue.reddit_project.service.UserService;
-import jakarta.transaction.Transactional;
-import org.hibernate.Hibernate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;

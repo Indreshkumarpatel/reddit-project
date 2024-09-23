@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/posts")
@@ -161,7 +163,7 @@ public class PostController {
         Post post = postService.getPostById(postId);
         SubReddit subReddit = subRedditService.getSubReddit(subRedditName);
         Long subRedditId = subReddit.getSubRedditId();
-        List<Flair> newFlairs = new ArrayList<>();
+        Set<Flair> newFlairs = new HashSet<>();
         for (String flair : flairs) {
             Flair f = flairService.getFlairByName(flair, subRedditId);
             newFlairs.add(f);

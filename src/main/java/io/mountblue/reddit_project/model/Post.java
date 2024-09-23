@@ -7,6 +7,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "posts")
@@ -35,8 +36,13 @@ public class Post {
     @Column(name = "down_vote")
     private int downVote;
 
-    @OneToMany
-    private List<Flair> flairs;
+    @ManyToMany
+    @JoinTable(
+            name = "posts_flairs",
+            joinColumns = @JoinColumn(name = "post_post_id"),
+            inverseJoinColumns = @JoinColumn(name = "flairs_flair_id")
+    )
+    private Set<Flair> flairs;
 
     @Transient
     private boolean userUpvoted;
@@ -198,11 +204,11 @@ public class Post {
         this.upVote = upVote;
     }
 
-    public List<Flair> getFlairs() {
+    public Set<Flair> getFlairs() {
         return flairs;
     }
 
-    public void setFlairs(List<Flair> flairs) {
+    public void setFlairs(Set<Flair> flairs) {
         this.flairs = flairs;
     }
 }

@@ -81,7 +81,8 @@ public class ViewController {
         }
 
         if(authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            User user = (User) authentication.getPrincipal();
+            String userName=SecurityContextHolder.getContext().getAuthentication().getName();
+            User user=userService.getUserByUsername(userName);
             model.addAttribute("user", user);
         }
         List<Post> postsWithDetails = posts.stream().map(post -> {

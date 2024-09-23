@@ -891,12 +891,32 @@
                         <h3 th:text="${post.subReddit.name}">Subreddit Name</h3>
                         <h6 th:text="${post.relativeTime}">Relative Time</h6>
                     </div>
-                    <a th:href="@{/user/profile}">
-                        <div class="user-details">
-                            <img th:src="${post.user.avatar}" alt="User Avatar" class="user-avatar"/>
-                            <span th:text="${post.user.username}">Username</span>
-                        </div>
-                    </a>
+<!--                    <a th:href="@{/user/profile}">-->
+<!--                        <div class="user-details">-->
+<!--                            <img th:src="${post.user.avatar}" alt="User Avatar" class="user-avatar"/>-->
+<!--                            <span th:text="${post.user.username}">Username</span>-->
+<!--                        </div>-->
+<!--                    </a>-->
+                    <span th:if="${user != null}">
+    <a th:if="${user.username == post.user.username}" th:href="@{/user/profile}">
+        <div class="user-details">
+            <img th:src="${post.user.avatar}" alt="User Avatar" class="user-avatar"/>
+            <span th:text="${post.user.username}">Username</span>
+        </div>
+    </a>
+    <span th:if="${user.username != post.user.username}">
+        <div class="user-details">
+            <img th:src="${post.user.avatar}" alt="User Avatar" class="user-avatar"/>
+            <span th:text="${post.user.username}">Username</span>
+        </div>
+    </span>
+</span>
+                    <span th:if="${user == null}">
+    <div class="user-details">
+        <img th:src="${post.user.avatar}" alt="User Avatar" class="user-avatar"/>
+        <span th:text="${post.user.username}">Username</span>
+    </div>
+</span>
                 </div>
                 <h3 th:text="${post.title}">Post Title</h3>
                 <div class="post-image">

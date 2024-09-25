@@ -23,4 +23,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("DELETE FROM Post p WHERE p.postId = :id")
     void deletePostById(@Param("id") Long id);
 
+    @Query("select DISTINCT p from Post p WHERE p.subReddit.subRedditId IN :subReddits")
+    List<Post> getPostsOfSubReddits(@Param("subReddits") List<Long> subReddits);
+
 }

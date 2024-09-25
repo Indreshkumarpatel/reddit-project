@@ -28,10 +28,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(authorize -> authorize
+        http.authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/posts/new").authenticated()
                         .requestMatchers("/", "/posts/{id}", "/user/new", "user/submit",
-                                "/showLoginPage", "/images/**", "/logo/**", "/posts/{id}/image",
+                                "/showLoginPage", "/images/**", "/logo/**", "/posts/{id}/image","/posts/video/{postId}",
                                 "/about-reddit", "/content-policy", "/privacy-policy", "/user-agreement").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -56,6 +56,7 @@ public class SecurityConfig {
     public AuthenticationSuccessHandler authenticationSuccessHandler() {
         return new AuthenticationSuccessHandler() {
             private final RequestCache requestCache = new HttpSessionRequestCache();
+
             @Override
             public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                                 org.springframework.security.core.Authentication authentication) throws IOException {

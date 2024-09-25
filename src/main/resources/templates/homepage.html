@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Navbar Example</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style>
 
         *
@@ -542,41 +543,53 @@
         .sort-dropdown {
             position: relative;
             display: inline-block;
-            margin-bottom: 20px;
         }
 
         .sort-button {
-            background-color: #cfcdcd;
-            border: 1px solid #ccc;
-            border-radius:20px;
             padding: 10px;
+            background-color: #f6f7f8;
+            border: none;
             cursor: pointer;
-            font-size: 14px;
         }
 
         .dropdown-content {
-            display: none;
             position: absolute;
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius:5px;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 1;
-            min-width: 70px;
-        }
-
-        .sort-dropdown:hover .dropdown-content {
-            display: block;
         }
 
         .dropdown-content a {
             color: black;
-            padding: 8px 12px;
+            padding: 12px 16px;
             text-decoration: none;
             display: block;
         }
 
         .dropdown-content a:hover {
             background-color: #f1f1f1;
+        }
+
+        .top-dropdown {
+            position: relative;
+        }
+
+        .top-button {
+            background: none;
+            border: none;
+            padding: 12px 16px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+
+        .top-options {
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
         }
         .community-list-container
         {
@@ -684,10 +697,9 @@
             border: none;
             font-size: 50px;
             cursor: pointer;
-            color: #333; /* Close button color */
+            color: #333;
         }
 
-        /* Additional styles for the rest of the sidebar */
         #subredditName {
             font-size: 1.5em;
             margin-top: 10px;
@@ -697,7 +709,6 @@
             margin: 10px 0;
         }
 
-        /* For rules section */
         .subreddit-rules {
             list-style-type: none;
             padding: 0;
@@ -720,7 +731,7 @@
         }
 
         .view-posts-button:hover {
-            background-color: #218838; /* Darker green on hover */
+            background-color: #218838;
         }
         .flairsString
         {
@@ -737,6 +748,47 @@
             border:1px solid #ccc;
             padding:0 10px;
             font-size: 1em;
+        }
+        .share-box {
+            position: fixed;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 20px;
+            z-index: 1000;
+            border-radius: 5px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            text-align: center;
+        }
+        .share-box input {
+            width: 200px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .share-box button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color:  #f6f7f8;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .share-box .close-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .share-box .close-btn i {
+            font-size:20px;
         }
     </style>
 </head>
@@ -757,16 +809,6 @@
         </form>
     </div>
     <div class="navbar-right">
-        <!--        <div sec:authorize="isAuthenticated()">-->
-        <!--            <a href="/posts/new" class="create-post-link">-->
-        <!--                <button id="createPostBtn">-->
-        <!--                    <div class="icon-circle" style="margin-right:3px;">-->
-        <!--                        <i class="fas fa-plus"></i>-->
-        <!--                    </div>-->
-        <!--                    Create Post-->
-        <!--                </button>-->
-        <!--            </a>-->
-        <!--        </div>-->
         <div sec:authorize="isAuthenticated()">
             <div th:if="${subReddits != null and !subReddits.isEmpty()}">
                 <a href="/posts/new" class="create-post-link">
@@ -779,7 +821,14 @@
                 </a>
             </div>
         </div>
-
+        <div sec:authorize="isAuthenticated()" style="display:flex; align-items:center;margin-left:15px;margin-right:5px;">
+            <a href="/chat">
+            <button id="chatIcon" class="chat-icon"
+                    style="background-color:transparent; border:none; cursor:pointer; font-size:24px;">
+                <i class="fas fa-message"></i>
+            </button>
+            </a>
+        </div>
 
         <div sec:authorize="isAnonymous()" style="display:flex;align-items:center;justify-content:center;">
             <a href="/showLoginPage" class="login-link">
@@ -817,7 +866,9 @@
         <a href="/" th:href="@{/(sort='top')}" class="sidebar-link">
             <button><i class="fas fa-star"></i> Popular</button>
         </a>
-
+        <a href="/" th:href="@{/ (myFeed='true')}" class="sidebar-link" sec:authorize="isAuthenticated()">
+            <button><i class="fas fa-plus"></i>My Feed</button>
+        </a>
 
     </div>
     <div class="community-list">
@@ -872,17 +923,26 @@
     <div class="post-container">
         <div class="sort-dropdown">
             <button class="sort-button">Sort by</button>
-            <div class="dropdown-content">
-                <a href="#" th:href="@{/(sort='new')}">New</a>
-                <a href="#" th:href="@{/(sort='old')}">Old</a>
-                <a href="#" th:href="@{/(sort='top')}">Top</a>
+            <div class="dropdown-content" style="display: none;">
+                <a th:href="@{/(sort='new')}">New</a>
+                <a th:href="@{/(sort='old')}">Old</a>
+                <div class="top-dropdown">
+                    <button class="top-button">Top</button>
+                    <div class="top-options" style="display:none;">
+                        <a th:href="@{/(sort='top_week')}">This Week</a>
+                        <a th:href="@{/(sort='top_day')}">Today</a>
+                        <a th:href="@{/(sort='top_month')}">This Month</a>
+                        <a th:href="@{/(sort='top_hour')}">This Hour</a>
+                    </div>
+                </div>
             </div>
         </div>
         <div th:if="${#lists.isEmpty(posts)}" class="no-posts">
             <p>No posts available.</p>
         </div>
+<!--        first part-->
         <div th:if="${!#lists.isEmpty(posts)}">
-            <div th:each="post : ${posts}" class="post-card">
+            <div th:each="post : ${posts.?[isPinned]}" class="post-card">
                 <div class="post-banner">
                     <a th:href="@{/(subRedditName=${post.subReddit.name})}">
                         <img th:src="${post.subReddit.avatar}" alt="Subreddit Avatar" class="avatar"/>
@@ -891,12 +951,51 @@
                         <h3 th:text="${post.subReddit.name}">Subreddit Name</h3>
                         <h6 th:text="${post.relativeTime}">Relative Time</h6>
                     </div>
-<!--                    <a th:href="@{/user/profile}">-->
-<!--                        <div class="user-details">-->
-<!--                            <img th:src="${post.user.avatar}" alt="User Avatar" class="user-avatar"/>-->
-<!--                            <span th:text="${post.user.username}">Username</span>-->
+                    <div th:if="${post.isPinned && !post.admin}">
+                        <i class="fas fa-thumbtack" title="Pinned"
+                           style="color: #FF4500;margin-right:10px;margin-bottom:-10px; transform: rotate(30deg);"></i>
+                    </div>
+                    <div th:if="${post.subscribed && !post.admin}" sec:authorize="isAuthenticated()">
+                        <form th:action="@{/user/leave}" method="post"
+                              style="display: inline-block; margin-right: 10px;">
+                            <input type="hidden" name="name" th:value="${post.subReddit.name}"/>
+                            <button type="submit" style="background-color: #28a745; color: white; border: none; padding: 8px 16px;
+                                      border-radius: 4px; cursor: pointer; font-size: 14px;">
+                                Joined
+                            </button>
+                        </form>
+                    </div>
+
+                    <div th:if="${!post.subscribed && !post.admin}" sec:authorize="isAuthenticated()">
+                        <form th:action="@{/user/join}" method="post"
+                              style="display: inline-block; margin-right: 10px;">
+                            <input type="hidden" name="name" th:value="${post.subReddit.name}"/>
+                            <button type="submit" style="background-color: #007bff; color: white; border: none; padding: 8px 16px;
+                                      border-radius: 4px; cursor: pointer; font-size: 14px;">
+                                Join
+                            </button>
+                        </form>
+                    </div>
+
+                    <div th:if="${post.admin}" sec:authorize="isAuthenticated()" style="display:flex;align-items:center; justify-content:center;">
+                        <div>
+                            <form th:action="@{/posts/pin}" method="post" th:if="${post.isPinned}" style="display:flex;align-items:center;justify-content:center;">
+                                <input type="hidden" name="isPin" value="false"/>
+                                <input type="hidden" name="postId" th:value="${post.postId}"/>
+                                <i class="fas fa-thumbtack" title="Pinned"
+                                   style="color: #FF4500;transform: rotate(30deg);margin-right: 5px;"></i>
+                                <input type="submit" value="Unpin"
+                                       style="background-color: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            </form>
+                        </div>
+<!--                        <div>-->
+<!--                            <a style="background-color: #ffc107; color: white; padding: 8px 16px; border-radius: 4px;margin-left:10px;-->
+<!--                            text-decoration: none; font-size: 14px;">-->
+<!--                                Admin-->
+<!--                            </a>-->
 <!--                        </div>-->
-<!--                    </a>-->
+
+                    </div>
                     <span th:if="${user != null}">
     <a th:if="${user.username == post.user.username}" th:href="@{/user/profile}">
         <div class="user-details">
@@ -919,11 +1018,20 @@
 </span>
                 </div>
                 <h3 th:text="${post.title}">Post Title</h3>
-                <div class="post-image">
-                    <img th:if="${post.image != null}"
-                         th:src="@{/posts/{id}/image(id=${post.postId})}"
-                         alt="Post Image"/>
+                <div th:if="${post.mediaUrl != null}">
+                    <div th:if="${post.mediaType == 'image'}">
+                        <img th:src="${post.mediaUrl}" alt="Uploaded Image"
+                             style="max-width: 100%; height: auto; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin: 10px 0;"/>
+                    </div>
+                    <div th:if="${post.mediaType == 'video'}">
+                        <video controls
+                               style="max-width: 100%; height: auto; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin: 10px 0;">
+                            <source th:src="${post.mediaUrl}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
                 </div>
+
                 <div class="post-interactions">
                     <div class="vote-buttons">
 
@@ -967,6 +1075,163 @@
                     <a th:href="@{/posts/{id}(id=${post.postId})}" class="view-comment">
                         <i class="fas fa-comment" title="Comment"></i> comment
                     </a>
+                    <a href="javascript:void(0);" class="share-link" th:data-post-id="${post.postId}">
+                        <i class="fas fa-share-alt" title="Share"></i> Share
+                    </a>
+                    <div th:id="'share-box-' + ${post.postId}" class="share-box" style="display:none;">
+                        <button class="close-btn" th:onclick="'closeShareBox(' + ${post.postId} + ')'">
+                            <i class="fas fa-times" style="color:black;"></i>
+                        </button>
+                        <input type="text"  th:value="${baseUrl}/posts/${post.postId}"
+                               th:id="'share-link-'+${post.postId}" readonly>
+                        <button th:onclick="'copyToClipboard(' + ${post.postId} + ')'">
+                            <i class="fas fa-copy" style="color:black;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+<!--            Second part-->
+            <div th:each="post : ${posts.?[!isPinned]}" class="post-card">
+                <div class="post-banner">
+                    <a th:href="@{/(subRedditName=${post.subReddit.name})}">
+                        <img th:src="${post.subReddit.avatar}" alt="Subreddit Avatar" class="avatar"/>
+                    </a>
+                    <div class="subreddit-details">
+                        <h3 th:text="${post.subReddit.name}">Subreddit Name</h3>
+                        <h6 th:text="${post.relativeTime}">Relative Time</h6>
+                    </div>
+                    <div th:if="${post.subscribed && !post.admin}" sec:authorize="isAuthenticated()">
+                        <form th:action="@{/user/leave}" method="post"
+                              style="display: inline-block; margin-right: 10px;">
+                            <input type="hidden" name="name" th:value="${post.subReddit.name}"/>
+                            <button type="submit" style="background-color: #28a745; color: white; border: none; padding: 8px 16px;
+                                      border-radius: 4px; cursor: pointer; font-size: 14px;">
+                                Joined
+                            </button>
+                        </form>
+                    </div>
+
+                    <div th:if="${!post.subscribed && !post.admin}" sec:authorize="isAuthenticated()">
+                        <form th:action="@{/user/join}" method="post"
+                              style="display: inline-block; margin-right: 10px;">
+                            <input type="hidden" name="name" th:value="${post.subReddit.name}"/>
+                            <button type="submit" style="background-color: #007bff; color: white; border: none; padding: 8px 16px;
+                                      border-radius: 4px; cursor: pointer; font-size: 14px;">
+                                Join
+                            </button>
+                        </form>
+                    </div>
+
+                    <div th:if="${post.admin}" sec:authorize="isAuthenticated()" style="display:flex;align-items:center;justify-content:center">
+
+                        <div>
+                            <form th:action="@{/posts/pin}" method="post" th:if="${!post.isPinned}" style="display:flex;align-items:center;justify-content:center;">
+                                <input type="hidden" name="isPin" value="true"/>
+                                <input type="hidden" name="postId" th:value="${post.postId}"/>
+<!--                                <i class="fas fa-thumbtack" title="Pinned" style="color:black; transform: rotate(-30deg); margin-right: 5px;"></i>-->
+                                <input type="submit" value="Pin" style="background-color: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            </form>
+                        </div>
+<!--                        <div>-->
+<!--                            <a style="background-color: #ffc107; color: white; padding: 8px 16px; border-radius: 4px;-->
+<!--                            text-decoration: none; margin-left:10px; font-size: 14px;">-->
+<!--                                Admin-->
+<!--                            </a>-->
+<!--                        </div>-->
+
+                    </div>
+                    <span th:if="${user != null}">
+    <a th:if="${user.username == post.user.username}" th:href="@{/user/profile}">
+        <div class="user-details">
+            <img th:src="${post.user.avatar}" alt="User Avatar" class="user-avatar"/>
+            <span th:text="${post.user.username}">Username</span>
+        </div>
+    </a>
+    <span th:if="${user.username != post.user.username}">
+        <div class="user-details">
+            <img th:src="${post.user.avatar}" alt="User Avatar" class="user-avatar"/>
+            <span th:text="${post.user.username}">Username</span>
+        </div>
+    </span>
+</span>
+                    <span th:if="${user == null}">
+    <div class="user-details">
+        <img th:src="${post.user.avatar}" alt="User Avatar" class="user-avatar"/>
+        <span th:text="${post.user.username}">Username</span>
+    </div>
+</span>
+                </div>
+                <h3 th:text="${post.title}">Post Title</h3>
+                <div th:if="${post.mediaUrl != null}">
+                    <div th:if="${post.mediaType == 'image'}">
+                        <img th:src="${post.mediaUrl}" alt="Uploaded Image"
+                             style="max-width: 100%; height: auto; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin: 10px 0;"/>
+                    </div>
+                    <div th:if="${post.mediaType == 'video'}">
+                        <video controls
+                               style="max-width: 100%; height: auto; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin: 10px 0;">
+                            <source th:src="${post.mediaUrl}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+
+                <div class="post-interactions">
+                    <div class="vote-buttons">
+
+                        <form sec:authorize="isAuthenticated()"
+                              th:action="@{/posts/{postId}/voteDecider(postId=${post.postId}, voteType='up')}"
+                              method="post" style="display: inline;">
+                            <button type="submit" style="background: none; border: none;">
+                                <i class="fas fa-caret-up upvote"
+                                   th:classappend="${post.userUpvoted} ? 'orange' : ''" title="Upvote"></i>
+                            </button>
+                        </form>
+
+                        <form sec:authorize="!isAuthenticated()"
+                              th:action="@{/login}" method="get" style="display: inline;">
+                            <button type="submit" style="background: none; border: none;">
+                                <i class="fas fa-caret-up upvote" title="Login to upvote"></i>
+                            </button>
+                        </form>
+
+                        <span class="vote-count" th:text="${post.totalVotes}">0</span>
+
+                        <form sec:authorize="isAuthenticated()"
+                              th:action="@{/posts/{postId}/voteDecider(postId=${post.postId}, voteType='down')}"
+                              method="post" style="display: inline;">
+                            <button type="submit" style="background: none; border: none;">
+                                <i class="fas fa-caret-down downvote"
+                                   th:classappend="${post.userDownvoted} ? 'blue' : ''" title="Downvote"></i>
+                            </button>
+                        </form>
+
+                        <form sec:authorize="!isAuthenticated()"
+                              th:action="@{/login}" method="get" style="display: inline;">
+                            <button type="submit" style="background: none; border: none;">
+                                <i class="fas fa-caret-down downvote" title="Login to downvote"></i>
+                            </button>
+                        </form>
+
+                    </div>
+
+                    <a th:href="@{/posts/{id}(id=${post.postId})}" class="view-post">View Post</a>
+                    <a th:href="@{/posts/{id}(id=${post.postId})}" class="view-comment">
+                        <i class="fas fa-comment" title="Comment"></i> comment
+                    </a>
+                    <a href="javascript:void(0);" class="share-link" th:data-post-id="${post.postId}">
+                        <i class="fas fa-share-alt" title="Share"></i> Share
+                    </a>
+                    <div th:id="'share-box-' + ${post.postId}" class="share-box" style="display:none;">
+                        <button class="close-btn" th:onclick="'closeShareBox(' + ${post.postId} + ')'">
+                            <i class="fas fa-times" style="color:black;"></i>
+                        </button>
+                        <input type="text"  th:value="${baseUrl} + '/posts/'+ ${post.postId}"
+                               th:id="'share-link-'+${post.postId}" readonly>
+                        <button th:onclick="'copyToClipboard(' + ${post.postId} + ')'">
+                            <i class="fas fa-copy" style="color:black;"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1027,9 +1292,71 @@
     <div style="display:flex;align-items:center;justify-content:center">
         <a id="viewPostsLink" href="#" class="view-posts-button">View Community Posts</a>
     </div>
-
 </div>
 <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('.sort-button').addEventListener('click', toggleDropdown);
+
+        document.querySelector('.top-button').addEventListener('click', function(event) {
+            toggleTopOptions(event);
+        });
+
+        window.addEventListener('click', function(event) {
+            const dropdownContent = document.querySelector('.dropdown-content');
+            const topOptions = document.querySelector('.top-options');
+
+            if (!event.target.matches('.sort-button')) {
+                if (dropdownContent.style.display === 'block') {
+                    dropdownContent.style.display = 'none';
+                }
+            }
+
+            if (!event.target.matches('.top-button')) {
+                if (topOptions.style.display === 'block') {
+                    topOptions.style.display = 'none';
+                }
+            }
+        });
+    });
+
+    function toggleDropdown() {
+        const dropdownContent = document.querySelector('.dropdown-content');
+        dropdownContent.style.display = (dropdownContent.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function toggleTopOptions(event) {
+        event.stopPropagation();
+        const topOptions = document.querySelector('.top-options');
+        topOptions.style.display = (topOptions.style.display === 'block') ? 'none' : 'block';
+    }
+
+    document.querySelectorAll('.share-link').forEach(function(shareLink) {
+        shareLink.addEventListener('click', function() {
+            var postId = this.getAttribute('data-post-id');
+            var shareBox = document.getElementById('share-box-' + postId);
+
+            if (shareBox.style.display === 'none') {
+                shareBox.style.display = 'block';
+            } else {
+                shareBox.style.display = 'none';
+            }
+        });
+    });
+    function closeShareBox(postId) {
+        var shareBox = document.getElementById('share-box-' + postId);
+        shareBox.style.display = 'none';
+    }
+
+    function copyToClipboard(postId) {
+        var copyText = document.getElementById('share-link-' + postId);
+
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        document.execCommand("copy");
+
+        alert("Copied to clipboard: " + copyText.value);
+    }
+
     var modal = document.getElementById("myModal");
     var btn = document.getElementById("myBtn");
     var createPostBtn = document.getElementById("createPostBtn");

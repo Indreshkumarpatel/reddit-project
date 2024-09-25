@@ -14,11 +14,7 @@ public class SubReddit {
     private Long subRedditId;
 
     private String name;
-
-
     private String description;
-
-
     private LocalDateTime createdAt;
     private String avatar;
 

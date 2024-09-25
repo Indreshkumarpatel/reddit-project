@@ -12,13 +12,12 @@ import java.util.Set;
 @Entity
 @Table(name = "posts")
 public class Post {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
     private Long postId;
 
-    @Column(name = "title")
+    @Column(name = "title",length = 300)
     private String title;
 
     @Column(name = "content", columnDefinition = "TEXT")
@@ -57,9 +56,58 @@ public class Post {
     @JoinColumn(name = "subreddit_id")
     private SubReddit subReddit;
 
-    @Lob
-    @Column(name = "image")
-    private byte[] image;
+    @Transient
+    private boolean subscribed;
+
+    @Transient
+    private boolean admin;
+
+    public boolean isSubscribed() {
+        return subscribed;
+    }
+
+    public void setSubscribed(boolean subscribed) {
+        this.subscribed = subscribed;
+    }
+
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
+    }
+
+    @Column(name="is_pinned")
+    private boolean isPinned = false;
+
+    public boolean isPinned() {
+        return isPinned;
+    }
+
+    public void setPinned(boolean pinned) {
+        isPinned = pinned;
+    }
+
+    private String mediaType;
+
+    private String mediaUrl;
+
+    public String getMediaUrl() {
+        return mediaUrl;
+    }
+
+    public void setMediaUrl(String mediaUrl) {
+        this.mediaUrl = mediaUrl;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
+    }
 
     @Transient
     private String relativeTime;
@@ -146,14 +194,6 @@ public class Post {
 
     public void setSubReddit(SubReddit subReddit) {
         this.subReddit = subReddit;
-    }
-
-    public byte[] getImage() {
-        return image;
-    }
-
-    public void setImage(byte[] image) {
-        this.image = image;
     }
 
     public String getRelativeTime() {

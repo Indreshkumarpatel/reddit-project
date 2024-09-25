@@ -10,7 +10,6 @@ public interface VoteCommentRepository extends JpaRepository<VoteComment, Long> 
     @Query("select vc from VoteComment vc where vc.comment.id=:commentId and vc.user.id=:userId")
     public VoteComment getVoteCommentByCommentIdAndUserId(@Param("commentId") Long commentId, @Param("userId") Long userId);
 
-
     @Modifying
     @Query("DELETE FROM VoteComment vc WHERE vc.comment.id = :commentId AND vc.user.id = :userId")
     public void deleteCommentVoteByCommentIdAndUserId(@Param("commentId") Long commentId, @Param("userId") Long userId);

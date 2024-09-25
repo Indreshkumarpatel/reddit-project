@@ -36,13 +36,20 @@ public class CommentService {
     }
 
 
-    public void saveComment(Long postId, String name, String email, String commentContent) {
+    public void saveComment(Long postId, String name, String email, String commentContent,Long parentCommentId) {
         Post post = postRepository.getReferenceById(postId);
         Comment comment = new Comment();
         comment.setComment(commentContent);
         comment.setEmail(email);
         comment.setName(name);
         comment.setPost(post);
+
+
+        if (parentCommentId != null) {
+            Comment parentComment = commentRepository.getReferenceById(parentCommentId);
+            comment.setParentComment(parentComment);
+            parentComment.getReplies().add(comment);
+        }
         commentRepository.save(comment);
     }
 

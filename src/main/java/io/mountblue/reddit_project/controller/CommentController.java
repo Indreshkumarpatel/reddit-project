@@ -35,12 +35,14 @@ public class CommentController {
     }
 
     @PostMapping("/add")
-    public String addComment(@RequestParam("postId") Long postId, @RequestParam("comment") String comment) {
+    public String addComment(@RequestParam("postId") Long postId,
+                             @RequestParam("comment") String comment,
+                             @RequestParam(value = "parentCommentId", required = false) Long parentCommentId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
         String username = user.getUsername();
         String email = user.getEmail();
-        commentService.saveComment(postId, username, email, comment);
+        commentService.saveComment(postId, username, email, comment, parentCommentId);
         return "redirect:/posts/" + postId;
     }
 

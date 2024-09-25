@@ -21,7 +21,7 @@
         }
 
         .container {
-            width: 400px;
+            width: 800px;
             margin: 60px auto;
             padding: 20px;
             background-color: #fff;
@@ -172,7 +172,17 @@
         input[type="submit"]:hover {
             background-color: #FF5722;;
         }
+        textarea#content {
+            visibility: hidden;
+            height: 0;
+            padding: 0;
+            margin: 0;
+        }
+
     </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+
 </head>
 <body>
 <nav class="navbar">
@@ -186,13 +196,13 @@
     <form th:action="@{/posts/createFirstPart}" method="post" enctype="multipart/form-data" class="post-form">
         <div class="form-group">
             <label for="title">Title:</label>
-            <input type="text" id="title" name="title" class="form-control" placeholder="Enter the title" required/>
+            <input type="text" id="title" name="title" class="form-control" placeholder="Enter the title" required maxlength="300" oninput="checkLength(this)"/>
+            <small class="form-text text-muted">300 characters max</small>
         </div>
 
         <div class="form-group">
             <label for="content">Content:</label>
-            <textarea id="content" name="body" class="form-control" placeholder="Enter your content here" rows="8"
-                      required></textarea>
+            <textarea id="content" name="body" class="form-control" placeholder="Enter your content here" rows="8" ></textarea>
         </div>
 
         <div class="form-group dropdown-container">
@@ -208,13 +218,12 @@
             </div>
             <input type="hidden" id="selectedSubReddit" name="subRedditName"/>
 
-            <!-- Optional: Error message -->
             <span id="error" style="color: red; display: none;">Please select a subreddit</span>
         </div>
 
         <div class="form-group">
-            <label for="image">Image:</label>
-            <input type="file" id="image" name="image" class="file-input"/>
+            <label for="media">Image or Video</label>
+            <input type="file" id="media" name="media" class="file-input"/>
         </div>
 
         <input type="submit" value="Next"/>
@@ -222,6 +231,7 @@
 </div>
 
 <script>
+    var simplemde = new SimpleMDE({ element: document.getElementById('content') });
     document.addEventListener('DOMContentLoaded', function() {
         const dropdownSelect = document.getElementById('dropdownSelect');
         const dropdownOptions = document.getElementById('dropdownOptions');
@@ -253,6 +263,7 @@
     });
 
     document.querySelector("form").addEventListener("submit", function (event) {
+        simplemde.codemirror.save();
         const selectedSubReddit = document.getElementById("selectedSubReddit").value;
 
         if (!selectedSubReddit) {
@@ -263,6 +274,11 @@
             document.getElementById("error").style.display = "none";
         }
     });
+    function checkLength(input) {
+        if (input.value.length > 300) {
+            input.value = input.value.substring(0, 300);
+        }
+    }
 </script>
 </body>
 </html>

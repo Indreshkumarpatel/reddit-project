@@ -3,11 +3,7 @@ package io.mountblue.reddit_project.controller;
 import io.mountblue.reddit_project.model.*;
 import io.mountblue.reddit_project.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,17 +28,23 @@ public class PostController {
     private final UserService userService;
     private final FlairService flairService;
     private final VoteCommentService voteCommentService;
+    private final MarkDownService markdownService;
+    private final S3Service s3Service;
+
+    @Value("${aws.s3.bucketName}")
+    String bucketName;
 
     @Autowired
-    public PostController(PostService postService, SubRedditService subRedditService, VoteService voteService, UserService userService, FlairService flairService, VoteCommentService voteCommentService) {
+    public PostController(PostService postService, SubRedditService subRedditService, VoteService voteService, UserService userService, FlairService flairService, VoteCommentService voteCommentService, MarkDownService markdownService, S3Service s3Service) {
         this.postService = postService;
         this.subRedditService = subRedditService;
         this.voteService = voteService;
         this.userService = userService;
         this.flairService = flairService;
         this.voteCommentService = voteCommentService;
+        this.markdownService=markdownService;
+        this.s3Service = s3Service;
     }
-
 
     @GetMapping("/{id}")
     public String fullViewPost(@PathVariable Long id, Model model, Principal principal) {
@@ -78,6 +79,9 @@ public class PostController {
         if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
             model.addAttribute("user", authentication.getPrincipal());
         }
+        String htmlContent = markdownService.convertMarkdownToHtml(post.getBody());
+        post.setBody(htmlContent);
+
         model.addAttribute("post", post);
         model.addAttribute("flairs", post.getFlairs());
         return "full-post-view";
@@ -116,8 +120,20 @@ public class PostController {
 
     @GetMapping("/{id}/deletePost")
     public String deletePost(@PathVariable Long id) {
+        Post post = postService.getPostById(id);
+        if (post.getMediaUrl() != null) {
+            String fileKey = extractFileKeyFromUrl(post.getMediaUrl());
+            s3Service.deleteFileFromS3Bucket(fileKey);
+        }
         postService.deletePostById(id);
         return "redirect:/";
+    }
+    private String extractFileKeyFromUrl(String mediaUrl) {
+        String baseUrl = String.format("https://%s.s3.amazonaws.com/", bucketName);
+        if (mediaUrl.startsWith(baseUrl)) {
+            return mediaUrl.replace(baseUrl, "");
+        }
+        return null;
     }
 
     @GetMapping("/new")
@@ -131,7 +147,7 @@ public class PostController {
     public String savePost(@RequestParam("title") String title,
                            @RequestParam("body") String body,
                            @RequestParam("subRedditName") String subRedditName,
-                           @RequestParam("image") MultipartFile imageFile,
+                           @RequestParam("media") MultipartFile mediaFile,
                            Model model) throws IOException {
         Post post = new Post();
         post.setTitle(title);
@@ -139,9 +155,16 @@ public class PostController {
         post.setSubReddit(subReddit);
         post.setBody(body);
 
-        if (!imageFile.isEmpty()) {
-            post.setImage(imageFile.getBytes());
+        System.out.println("body = " + body);
+
+        if (!mediaFile.isEmpty()) {
+            String fileUrl = s3Service.uploadFile(mediaFile, bucketName);
+            post.setMediaUrl(fileUrl);
+
+            String contentType = mediaFile.getContentType();
+            post.setMediaType(contentType.startsWith("video/") ? "video" : "image");
         }
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
         post.setUser(user);
@@ -172,21 +195,11 @@ public class PostController {
         postService.saveCreatePost(post);
         return "redirect:/";
     }
-
-    @GetMapping("/{id}/image")
-    public ResponseEntity<ByteArrayResource> getPostImage(@PathVariable Long id) {
-        Post post = postService.getPostById(id);
-
-        if (post != null && post.getImage() != null) {
-            ByteArrayResource resource = new ByteArrayResource(post.getImage());
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentLength(post.getImage().length);
-
-            return new ResponseEntity<>(resource, headers, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @PostMapping("/pin")
+    public String setPinnedPost(@RequestParam boolean isPin , @RequestParam Long postId){
+        Post post = postService.getPostById(postId);
+        post.setPinned(isPin);
+        postService.updateThePost(post);
+        return "redirect:/";
     }
 }

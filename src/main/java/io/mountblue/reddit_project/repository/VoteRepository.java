@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VoteRepository extends JpaRepository<Vote, Long> {
-
     @Modifying
     @Transactional
     @Query("DELETE FROM Vote v WHERE v.post.id = :postId AND v.user.id = :userId")

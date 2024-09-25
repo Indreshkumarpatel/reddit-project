@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 
 @Entity
 public class VoteComment {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -12,7 +11,6 @@ public class VoteComment {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
 
     @ManyToOne
     @JoinColumn(name = "comment_id")

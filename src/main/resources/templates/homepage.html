@@ -1082,7 +1082,7 @@
                         <button class="close-btn" th:onclick="'closeShareBox(' + ${post.postId} + ')'">
                             <i class="fas fa-times" style="color:black;"></i>
                         </button>
-                        <input type="text"  th:value="${baseUrl}/posts/${post.postId}"
+                        <input type="text"  th:value="${baseUrl}+'/posts/'+${post.postId}"
                                th:id="'share-link-'+${post.postId}" readonly>
                         <button th:onclick="'copyToClipboard(' + ${post.postId} + ')'">
                             <i class="fas fa-copy" style="color:black;"></i>

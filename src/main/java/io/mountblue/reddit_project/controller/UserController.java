@@ -40,8 +40,7 @@ public class UserController {
         Set<String> userNameSet = userService.getUserNameSet();
 
         if (emailSet.contains(user.getEmail()) || userNameSet.contains(user.getUsername())) {
-            model.addAttribute("error", "email/username is already present");
-            return "register";
+            return "redirect:/user/new?error=emailOrUsernameExists";
         }
         userService.saveNewUser(user);
         return "login";
